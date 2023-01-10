@@ -1,0 +1,47 @@
+version: "3.1"
+
+services:
+
+  pyscript:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    container_name: pyscript
+    restart: always
+    working_dir: /app
+    volumes:
+      - code-pyscript:/app
+    depends_on:
+      - pydb
+
+  pydb:
+    image: mariadb:10.3.23
+    container_name: pydb
+    volumes:
+      - dir-datavolume-pydb:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=${DB_DATABASE}
+      - MYSQL_USER=${DB_USERNAME}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+    ports:
+      - "${DB_EXTERNAL_PORT}:${DB_INTERNAL_PORT}"
+
+
+volumes:
+  dir-datavolume-pydb:
+  code-pyscript:
+
+# Set up Mutagen synchronization and forwarding.
+x-mutagen:
+  sync:
+    defaults:
+      ignore:
+        vcs: true
+      permissions:
+          defaultFileMode: 0644
+          defaultDirectoryMode: 0755
+    code-backend:
+      alpha: "/Users/sheika/python/pydoc"
+      beta: "volume://code-pyscript"
+      mode: "two-way-resolved"
